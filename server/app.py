@@ -17,10 +17,36 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self):
+        return plants
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("name", type=str, required=True, help="Name is required")
+        parser.add_argument("image", type=str, required=True, help="Image URL is required")
+        parser.add_argument("price", type=float, required=True, help="Price is required")
+        args = parser.parse_args()
+
+        new_plant = {
+            "id": len(plants) + 1,
+            "name": args["name"],
+            "image": args["image"],
+            "price": args["price"]
+        }
+
+        plants.append(new_plant)
+        return new_plant, 201
 
 class PlantByID(Resource):
-    pass
+    def get(self, plant_id):
+        plant = next((p for p in plants if p["id"] == plant_id), None)
+        if plant:
+            return plant
+        else:
+            return {"message": "Plant not found"}, 404
+
+api.add_resource(Plants, "/plants")
+api.add_resource(PlantByID, "/plants/<int:plant_id>")
         
 
 if __name__ == '__main__':
